@@ -29,15 +29,12 @@
 - DaisyUI
 - TypeScript
 
-## Issues I ran into while working on this project
-- I needed to fork the @concordium/web-sdk npm package because by default it wasn't compatible with vite, check it out here [concordium-web-sdk-vite](https://www.npmjs.com/package/concordium-web-sdk-vite)
-- I tried including age verification in this project but unfortunately i couldn't find a way to do it with the smart contract, and since client side authentication would be pointless in a dapp where anyone can interact with the contract without using my fronted, i opted not include this feature
-- I couldn't make a smart contract which supports all TokenAmounts so this one uses TokenAmountU64, of course it can be easily modified to work with a different amount
-- I tried to get the block time in the contract, but the method: ```get_slot_time()``` that is supposed to do this is unsafe and didn't work for me
-- In the web-sdk I couldn't find a way to get the schema that can be embedded into the smart contract
+## Usage
 
-## Personal Comment:
-While there were a lot of issues which caused me to run out of time to perfect this project, I still enjoyed this hackathon and see the potential in Concordium, I hope you guys put in the time to perfect it and make it more usable for developers
+1. Go to the [Demo Site](https://delta-swap.vercel.app)
+2. Make sure you have set your browser wallet to Testnet and you have some Testnet CCd
+3. Write the amount of CCD you want to swap and accept the transactions
+4. Thats it, if it for whatever reason didn't work for you check out the [Demo Video](https://www.youtube.com/watch?v=DWxYKzcof2k)
 
 ## How to get running
 
@@ -58,9 +55,19 @@ And now comes the frontend
 
 Congrats you made it!
 
+## Issues I ran into while working on this project
+- I needed to fork the @concordium/web-sdk npm package because by default it wasn't compatible with vite, check it out here [concordium-web-sdk-vite](https://www.npmjs.com/package/concordium-web-sdk-vite)
+- I tried including age verification in this project but unfortunately i couldn't find a way to do it with the smart contract, and since client side authentication would be pointless in a dapp where anyone can interact with the contract without using my fronted, i opted not include this feature
+- I couldn't make a smart contract which supports all TokenAmounts so this one uses TokenAmountU64, of course it can be easily modified to work with a different amount
+- I tried to get the block time in the contract, but the method: ```get_slot_time()``` that is supposed to do this is unsafe and didn't work for me
+- In the web-sdk I couldn't find a way to get the schema that can be embedded into the smart contract
+
+## Personal Comment:
+While there were a lot of issues which caused me to run out of time to perfect this project, I still enjoyed this hackathon and see the potential in Concordium, I hope you guys put in the time to perfect it and make it more usable for developers
 
 ## Disclaimer
 - This is just a prototype and shouldn't be used in a production environment
 - Only works with TokenAmountU64
 - There are a lot of visual bugs in the frontend, since @concordium/web-sdk kept breaking and i had to rewrite my code many times
+- I didn't have time to finish the ui for adding liquidity so it can fail if you write the wrong amount into the field
 
