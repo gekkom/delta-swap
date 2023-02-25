@@ -4,7 +4,7 @@
 
 <header>
 	<div class="flex">
-		<div class="navbar bg-base-100">
+		<div class="navbar bg-base-300">
 			<div class="navbar-start">
 				<div class="dropdown">
 					<label tabindex="0" class="btn btn-ghost sm:hidden">
@@ -30,6 +30,7 @@
 						<li><a href="/liquidity">Liquidity</a></li>
 					</ul>
 				</div>
+				<img src="/delta.png" alt="Logo" width="32px" />
 				<a class="btn btn-ghost normal-case text-xl">deltaSwap</a>
 			</div>
 			<div class="navbar-center hidden sm:flex">

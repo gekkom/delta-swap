@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { addLiquidity, isOperatorOfToken, removeLiquidity } from '$lib/Exchange';
 	import { AddOrRemove } from '$lib/types';
-	import { get, writable } from 'svelte/store';
+	import { get } from 'svelte/store';
 	import { addOrRemove, selectedLiquidityPool } from './LiquidityPool';
 
     let amount = '';
@@ -17,12 +17,10 @@
 	}
 
 	function addLiquidty() {
-		console.log('add liquidity');
 		addLiquidity(get(selectedLiquidityPool), amount);
 	}
 
 	function removeLiquidty() {
-		console.log('remove liquidity');
 		removeLiquidity(get(selectedLiquidityPool), amount);
 	}
 
@@ -39,8 +37,8 @@
 				{:else}
 					<h2 class="font-bold text-lg">Remove Liquidity</h2>
 				{/if}
-				<input type="number" placeholder="0" class="input w-full max-w-xs" bind:value={amount}/>
-				<label for="liquidity-modal" class="btn btn-primary" on:click={confirm}>Confirm</label>
+				<input type="number" placeholder="0" class="input w-full mt-4" bind:value={amount}/>
+				<label for="liquidity-modal" class="btn btn-primary rounded-lg mt-4" on:click={confirm}>Confirm</label>
 			</div>
 		</div>
 	</div>

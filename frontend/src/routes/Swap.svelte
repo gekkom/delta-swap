@@ -36,6 +36,8 @@
 	}
 
 	async function swap() {
+		if(fromAmount == '' || fromAmount == '0' || fromAmount == null) return;
+
 		console.log(await isOperatorOfToken(get(selectedToToken)))
 		if (get(selectedFromToken).symbol === 'CCD' && fromAmount != null) {
 			await ccdToToken(get(selectedToToken), fromAmount);
@@ -45,10 +47,10 @@
 	}
 </script>
 
-<div class="flex place-self-center">
-	<div class="flex justify-center grow place-self-center ">
-		<div class="flex flex-col bg-base-300 basis-1/2 rounded-lg p-2  max-w-lg">
-			<div class="basis-2/6 bg-base-200 flex flex-row mb-1 p-1 rounded-lg w-full">
+<div class="flex place-content-center grow content-center h-full mt-5">
+	<div class="flex justify-center grow place-content-center h-full">
+		<div class="flex flex-col bg-base-300 basis-1/2 rounded-lg p-2 max-w-lg h-full">
+			<div class="basis-2/6 bg-base-200 flex flex-row mb-1 p-1 rounded-lg w-full h-full">
 				<input
 					type="number"
 					placeholder="0"

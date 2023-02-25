@@ -20,7 +20,7 @@
 
 	selectedLiquidityPool.subscribe(async (value) => {
 		liquidityPool = value;
-    if(!value) return;
+		if (!value) return;
 
 		totalLiquidity = await getTotalLiquidity(value);
 		ccdBalance = await getPoolCCDBalance(value);
@@ -33,20 +33,19 @@
 		addOrRemove.set(laddOrRemove);
 	}
 
-  function deSelectPool() {
-    selectedLiquidityPool.set(undefined as unknown as Token);
-  }
-
+	function deSelectPool() {
+		selectedLiquidityPool.set(undefined as unknown as Token);
+	}
 </script>
 
 {#if liquidityPool}
-	<div class="flex place-self-center">
+	<div class="flex place-self-center mt-5">
 		<div class="flex justify-center grow place-self-center ">
 			<div class="flex flex-col bg-base-300 basis-1/2 rounded-lg p-2  max-w-lg">
-        <div class="flex flex-row justify-between">
-          <button class="btn btn-sm btn-circle" on:click={deSelectPool}>✕</button>
-          <h2 class="float-right">{liquidityPool.name}</h2>  
-        </div>
+				<div class="flex flex-row justify-between">
+					<button class="btn btn-sm btn-circle" on:click={deSelectPool}>✕</button>
+					<h2 class="float-right">{liquidityPool.name}</h2>
+				</div>
 				<div class="basis-2/6 bg-base-200 flex flex-col mb-2 p-1 rounded-lg w-full">
 					<div class="stats stats-vertical shadow">
 						<div class="stat">

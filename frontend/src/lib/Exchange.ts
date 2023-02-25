@@ -29,19 +29,19 @@ async function initContract() {
         },
         EXCHANGE_SCHEMA
     )
-
-    console.log(out);
 }
 
 async function addLiquidity(token: Token, amount: string) {
+    await addAsOperatorOfToken(token);
+
     const paramJson = {
         min_liquidity: 1,
-        max_tokens: Number(amount) * token.decimals,
+        max_tokens: Number(amount) * Math.pow(10, token.decimals),
     };
     const out = await get(wallet).sendTransaction(get(address),
         AccountTransactionType.Update,
         {
-            amount: new CcdAmount(BigInt(Number(amount) * CONCORDIUM.decimals)),
+            amount: new CcdAmount(BigInt(Number(amount) * Math.pow(10, CONCORDIUM.decimals))),
             address: {
                 index: BigInt(token.exchangeAddress),
                 subindex: 0n,
@@ -52,13 +52,11 @@ async function addLiquidity(token: Token, amount: string) {
         paramJson as any,
         EXCHANGE_SCHEMA
     )
-
-    console.log(out);
 }
 
 async function removeLiquidity(token: Token, amount: string) {
     const paramJson = {
-        amount: Number(amount) * CONCORDIUM.decimals,
+        amount: Number(amount) * Math.pow(10, CONCORDIUM.decimals),
         min_ccd: 1,
         min_tokens: 1,
     };
@@ -76,8 +74,6 @@ async function removeLiquidity(token: Token, amount: string) {
         paramJson as any,
         EXCHANGE_SCHEMA
     )
-
-    console.log(out);
 }
 
 async function ccdToToken(token: Token, amount: string) {
@@ -87,7 +83,7 @@ async function ccdToToken(token: Token, amount: string) {
     const out = await get(wallet).sendTransaction(get(address),
         AccountTransactionType.Update,
         {
-            amount: new CcdAmount(BigInt(Number(amount) * CONCORDIUM.decimals)),
+            amount: new CcdAmount(BigInt(Number(amount) * Math.pow(10, CONCORDIUM.decimals))),
             address: {
                 index: BigInt(token.exchangeAddress),
                 subindex: 0n,
@@ -98,13 +94,13 @@ async function ccdToToken(token: Token, amount: string) {
         paramJson as any,
         EXCHANGE_SCHEMA
     )
-
-    console.log(out);
 }
 
 async function tokenToCcd(token: Token, amount: string) {
+    await addAsOperatorOfToken(token);
+
     const paramJson = {
-        tokens_sold: Number(amount) * token.decimals,
+        tokens_sold: Number(amount) * Math.pow(10, token.decimals),
         min_ccd: 0,
     };
     const out = await get(wallet).sendTransaction(get(address),
@@ -121,15 +117,13 @@ async function tokenToCcd(token: Token, amount: string) {
         paramJson as any,
         EXCHANGE_SCHEMA
     )
-
-    console.log(out);
 }
 
 async function ccdToTokenPrice(token: Token, amount: string) {
     if (amount === '' || amount === '0') return '0';
 
     let ccdBuffer = new Buffer(8);
-    ccdBuffer.writeBigUInt64LE(BigInt(Number(amount) * CONCORDIUM.decimals), 0);
+    ccdBuffer.writeBigUInt64LE(BigInt(Number(amount) * Math.pow(10, CONCORDIUM.decimals)), 0);
 
     const out = await get(wallet).getJsonRpcClient().invokeContract({
         contract: { index: BigInt(EXCHANGE_CONTRACT_ADDRESS), subindex: BigInt(0) },
@@ -141,14 +135,14 @@ async function ccdToTokenPrice(token: Token, amount: string) {
         return '';
     }
 
-    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / token.decimals).toString();
+    return moveDecimals(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt().toString(), token.decimals).toString();
 }
 
 async function tokenToCcdPrice(token: Token, amount: string) {
     if (amount === '' || amount === '0') return '0';
 
     let tokenBuffer = new Buffer(8);
-    tokenBuffer.writeBigUInt64LE(BigInt(Number(amount) * token.decimals), 0);
+    tokenBuffer.writeBigUInt64LE(BigInt(Number(amount) * Math.pow(10, token.decimals)), 0);
 
     const out = await get(wallet).getJsonRpcClient().invokeContract({
         contract: { index: BigInt(token.exchangeAddress), subindex: BigInt(0) },
@@ -159,7 +153,7 @@ async function tokenToCcdPrice(token: Token, amount: string) {
         return '';
     }
 
-    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / CONCORDIUM.decimals).toString();
+    return moveDecimals(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt().toString(), CONCORDIUM.decimals);
 }
 
 async function getTotalLiquidity(token: Token) {
@@ -182,7 +176,7 @@ async function getPoolCCDBalance(token: Token) {
         return 0;
     }
 
-    return Number(out.amount.microCcdAmount) / CONCORDIUM.decimals;
+    return Number(out.amount.microCcdAmount) / Math.pow(10, CONCORDIUM.decimals);
 }
 
 async function getPoolTokenReserve(token: Token) {
@@ -195,7 +189,7 @@ async function getPoolTokenReserve(token: Token) {
         return 0;
     }
 
-    return Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / token.decimals;
+    return Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / Math.pow(10, token.decimals);
 }
 
 async function getUserLiquidity(token: Token) {
@@ -216,43 +210,46 @@ async function isOperatorOfToken(token: Token) {
         contract: { index: BigInt(token.exchangeAddress), subindex: BigInt(0) },
         method: 'exchange.is_operator_of_token',
     })
-    console.log(out)
     if (!out || out.tag === 'failure' || !out.returnValue) {
         return false;
-    }
-
-    if (out.returnValue === '00') {
-        //addAsOperatorOfToken(token);
     }
 
     return out.returnValue;
 }
 
 async function addAsOperatorOfToken(token: Token) {
-    const paramJson = [
-        {
-            update: { Add: {} },
-            operator: {
-                Contract: [{ index: token.exchangeAddress, subindex: 0 }],
+    if (localStorage.getItem('operatorOfToken') !== 'true') {
+        const paramJson = [
+            {
+                update: { Add: {} },
+                operator: {
+                    Contract: [{ index: token.exchangeAddress, subindex: 0 }],
+                },
             },
-        },
-    ] as UpdateOperatorParams;
-    const out = await get(wallet).sendTransaction(get(address),
-        AccountTransactionType.Update,
-        {
-            amount: new CcdAmount(0n),
-            address: {
-                index: BigInt(token.address),
-                subindex: 0n,
-            },
-            receiveName: await getContractName(BigInt(token.address)) + '.updateOperator',
-            maxContractExecutionEnergy: 30000n,
-        } as UpdateContractPayload,
-        paramJson as any,
-        WCCD_SCHEMA
-    )
+        ] as UpdateOperatorParams;
+        const out = await get(wallet).sendTransaction(get(address),
+            AccountTransactionType.Update,
+            {
+                amount: new CcdAmount(0n),
+                address: {
+                    index: BigInt(token.address),
+                    subindex: 0n,
+                },
+                receiveName: await getContractName(BigInt(token.address)) + '.updateOperator',
+                maxContractExecutionEnergy: 30000n,
+            } as UpdateContractPayload,
+            paramJson as any,
+            WCCD_SCHEMA
+        )
 
-    return out;
+        if (!out) {
+            return false;
+        }
+
+        localStorage.setItem('operatorOfToken', 'true');
+    }
+
+    return true;
 }
 
 async function getInstanceInfo(address: bigint) {
@@ -298,15 +295,14 @@ async function initTokenContract() {
     console.log(out);
 }
 
-async function getBalanceOf() {
+async function getBalanceOf(token: Token, address: string) {
     const param = serializeUpdateContractParameters(
         'cis2_wCCD',
         'balanceOf',
         [
             {
                 address: {
-                    Account: ['2yvxNapk8nEu6zfkZJDgxTsGFqG7vs4HGtAiEDAF3VTFjbXTQ9'],
-                    //Contract: [{ index: EXCHANGE_CONTRACT_ADDRESS, subindex: 0 }],
+                    Account: [address],
                 },
                 token_id: '',
             },
@@ -316,7 +312,7 @@ async function getBalanceOf() {
 
 
     const out = await get(wallet).getJsonRpcClient().invokeContract({
-        contract: { index: BigInt(3262), subindex: BigInt(0) },
+        contract: { index: BigInt(token.address), subindex: BigInt(0) },
         method: 'cis2_wCCD.balanceOf',
         parameter: param,
     })
@@ -325,7 +321,7 @@ async function getBalanceOf() {
         return;
     }
 
-    console.log(BigInt(leb.decodeULEB128(toBuffer(out.returnValue.slice(4), 'hex'))[0]));
+    return moveDecimals(BigInt(leb.decodeULEB128(toBuffer(out.returnValue.slice(4), 'hex'))[0]).toString(), token.decimals);
 }
 
 async function addOperator() {
@@ -355,7 +351,15 @@ async function addOperator() {
     console.log(out);
 }
 
-async function interactBalanceOf() {
+function moveDecimals(amount: string, decimals: number) {
+    let out = amount.slice(0, amount.length - decimals);
+    if (out === '') {
+        out = '0';
+    }
+    return out + '.' + amount.slice(amount.length - decimals);
+}
+
+/*async function interactBalanceOf() {
     const param = serializeUpdateContractParameters(
         'cis2_wCCD',
         'balanceOf',
@@ -371,18 +375,18 @@ async function interactBalanceOf() {
         ],
         toBuffer(WCCD_SCHEMA, 'base64') as any,
     );
-
-
+ 
+ 
     const out = await get(wallet).getJsonRpcClient().invokeContract({
         contract: { index: BigInt(3262), subindex: BigInt(0) },
         method: 'cis2_wCCD.balanceOf',
         parameter: param,
     })
-
+ 
     if (!out || out.tag === 'failure' || !out.returnValue) {
         return;
     }
-
+ 
     console.log(BigInt(leb.decodeULEB128(toBuffer(out.returnValue.slice(4), 'hex'))[0]));
 }
 async function wrapCcd(amount: number) {
@@ -405,11 +409,11 @@ async function wrapCcd(amount: number) {
         },
         WCCD_SCHEMA,
     )
-
+ 
     console.log(out);
 }
-
-async function iinitTokenContract() {
+ 
+async function initTokenContract() {
     const out = await get(wallet).sendTransaction(get(address),
         AccountTransactionType.InitContract,
         {
@@ -425,9 +429,9 @@ async function iinitTokenContract() {
         },
         '//8DAQAAAAkAAABjaXMyX3dDQ0QBABQAAQAAAAMAAAB1cmwWAg4AAAAJAAAAYmFsYW5jZU9mBhABFAACAAAACAAAAHRva2VuX2lkHQAHAAAAYWRkcmVzcxUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAwQARslAAAAFQQAAAAOAAAASW52YWxpZFRva2VuSWQCEQAAAEluc3VmZmljaWVudEZ1bmRzAgwAAABVbmF1dGhvcml6ZWQCBgAAAEN1c3RvbQEBAAAAFQkAAAALAAAAUGFyc2VQYXJhbXMCBwAAAExvZ0Z1bGwCDAAAAExvZ01hbGZvcm1lZAIOAAAAQ29udHJhY3RQYXVzZWQCEwAAAEludm9rZUNvbnRyYWN0RXJyb3ICEwAAAEludm9rZVRyYW5zZmVyRXJyb3ICGgAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nTW9kdWxlAhwAAABGYWlsZWRVcGdyYWRlTWlzc2luZ0NvbnRyYWN0AiUAAABGYWlsZWRVcGdyYWRlVW5zdXBwb3J0ZWRNb2R1bGVWZXJzaW9uAgoAAABvcGVyYXRvck9mBhABFAACAAAABQAAAG93bmVyFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADAcAAABhZGRyZXNzFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADBABARUEAAAADgAAAEludmFsaWRUb2tlbklkAhEAAABJbnN1ZmZpY2llbnRGdW5kcwIMAAAAVW5hdXRob3JpemVkAgYAAABDdXN0b20BAQAAABUJAAAACwAAAFBhcnNlUGFyYW1zAgcAAABMb2dGdWxsAgwAAABMb2dNYWxmb3JtZWQCDgAAAENvbnRyYWN0UGF1c2VkAhMAAABJbnZva2VDb250cmFjdEVycm9yAhMAAABJbnZva2VUcmFuc2ZlckVycm9yAhoAAABGYWlsZWRVcGdyYWRlTWlzc2luZ01vZHVsZQIcAAAARmFpbGVkVXBncmFkZU1pc3NpbmdDb250cmFjdAIlAAAARmFpbGVkVXBncmFkZVVuc3VwcG9ydGVkTW9kdWxlVmVyc2lvbgIPAAAAc2V0SW1wbGVtZW50b3JzBBQAAgAAAAIAAABpZBYADAAAAGltcGxlbWVudG9ycxACDBUEAAAADgAAAEludmFsaWRUb2tlbklkAhEAAABJbnN1ZmZpY2llbnRGdW5kcwIMAAAAVW5hdXRob3JpemVkAgYAAABDdXN0b20BAQAAABUJAAAACwAAAFBhcnNlUGFyYW1zAgcAAABMb2dGdWxsAgwAAABMb2dNYWxmb3JtZWQCDgAAAENvbnRyYWN0UGF1c2VkAhMAAABJbnZva2VDb250cmFjdEVycm9yAhMAAABJbnZva2VUcmFuc2ZlckVycm9yAhoAAABGYWlsZWRVcGdyYWRlTWlzc2luZ01vZHVsZQIcAAAARmFpbGVkVXBncmFkZU1pc3NpbmdDb250cmFjdAIlAAAARmFpbGVkVXBncmFkZVVuc3VwcG9ydGVkTW9kdWxlVmVyc2lvbgIOAAAAc2V0TWV0YWRhdGFVcmwEFAABAAAAAwAAAHVybBYCFQQAAAAOAAAASW52YWxpZFRva2VuSWQCEQAAAEluc3VmZmljaWVudEZ1bmRzAgwAAABVbmF1dGhvcml6ZWQCBgAAAEN1c3RvbQEBAAAAFQkAAAALAAAAUGFyc2VQYXJhbXMCBwAAAExvZ0Z1bGwCDAAAAExvZ01hbGZvcm1lZAIOAAAAQ29udHJhY3RQYXVzZWQCEwAAAEludm9rZUNvbnRyYWN0RXJyb3ICEwAAAEludm9rZVRyYW5zZmVyRXJyb3ICGgAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nTW9kdWxlAhwAAABGYWlsZWRVcGdyYWRlTWlzc2luZ0NvbnRyYWN0AiUAAABGYWlsZWRVcGdyYWRlVW5zdXBwb3J0ZWRNb2R1bGVWZXJzaW9uAgkAAABzZXRQYXVzZWQEFAABAAAABgAAAHBhdXNlZAEVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CCAAAAHN1cHBvcnRzBhABFgAQARUDAAAACQAAAE5vU3VwcG9ydAIHAAAAU3VwcG9ydAIJAAAAU3VwcG9ydEJ5AQEAAAAQAAwVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CDQAAAHRva2VuTWV0YWRhdGEGEAEdABABFAACAAAAAwAAAHVybBYBBAAAAGhhc2gVAgAAAAQAAABOb25lAgQAAABTb21lAQEAAAATIAAAAAIVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CCAAAAHRyYW5zZmVyBBABFAAFAAAACAAAAHRva2VuX2lkHQAGAAAAYW1vdW50GyUAAAAEAAAAZnJvbRUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAwCAAAAdG8VAgAAAAcAAABBY2NvdW50AQEAAAALCAAAAENvbnRyYWN0AQIAAAAMFgEEAAAAZGF0YR0BFQQAAAAOAAAASW52YWxpZFRva2VuSWQCEQAAAEluc3VmZmljaWVudEZ1bmRzAgwAAABVbmF1dGhvcml6ZWQCBgAAAEN1c3RvbQEBAAAAFQkAAAALAAAAUGFyc2VQYXJhbXMCBwAAAExvZ0Z1bGwCDAAAAExvZ01hbGZvcm1lZAIOAAAAQ29udHJhY3RQYXVzZWQCEwAAAEludm9rZUNvbnRyYWN0RXJyb3ICEwAAAEludm9rZVRyYW5zZmVyRXJyb3ICGgAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nTW9kdWxlAhwAAABGYWlsZWRVcGdyYWRlTWlzc2luZ0NvbnRyYWN0AiUAAABGYWlsZWRVcGdyYWRlVW5zdXBwb3J0ZWRNb2R1bGVWZXJzaW9uAgYAAAB1bndyYXAEFAAEAAAABgAAAGFtb3VudBslAAAABQAAAG93bmVyFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADAgAAAByZWNlaXZlchUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAgAAAAwWAQQAAABkYXRhHQEVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CCwAAAHVwZGF0ZUFkbWluBBUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAwVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CDgAAAHVwZGF0ZU9wZXJhdG9yBBABFAACAAAABgAAAHVwZGF0ZRUCAAAABgAAAFJlbW92ZQIDAAAAQWRkAggAAABvcGVyYXRvchUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAwVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CBwAAAHVwZ3JhZGUEFAACAAAABgAAAG1vZHVsZR4gAAAABwAAAG1pZ3JhdGUVAgAAAAQAAABOb25lAgQAAABTb21lAQEAAAAPFgEdARUEAAAADgAAAEludmFsaWRUb2tlbklkAhEAAABJbnN1ZmZpY2llbnRGdW5kcwIMAAAAVW5hdXRob3JpemVkAgYAAABDdXN0b20BAQAAABUJAAAACwAAAFBhcnNlUGFyYW1zAgcAAABMb2dGdWxsAgwAAABMb2dNYWxmb3JtZWQCDgAAAENvbnRyYWN0UGF1c2VkAhMAAABJbnZva2VDb250cmFjdEVycm9yAhMAAABJbnZva2VUcmFuc2ZlckVycm9yAhoAAABGYWlsZWRVcGdyYWRlTWlzc2luZ01vZHVsZQIcAAAARmFpbGVkVXBncmFkZU1pc3NpbmdDb250cmFjdAIlAAAARmFpbGVkVXBncmFkZVVuc3VwcG9ydGVkTW9kdWxlVmVyc2lvbgIEAAAAdmlldwUUAAMAAAAFAAAAYWRtaW4VAgAAAAcAAABBY2NvdW50AQEAAAALCAAAAENvbnRyYWN0AQEAAAAMBgAAAHBhdXNlZAEMAAAAbWV0YWRhdGFfdXJsFAACAAAAAwAAAHVybBYBBAAAAGhhc2gVAgAAAAQAAABOb25lAgQAAABTb21lAQEAAAATIAAAAAIVBAAAAA4AAABJbnZhbGlkVG9rZW5JZAIRAAAASW5zdWZmaWNpZW50RnVuZHMCDAAAAFVuYXV0aG9yaXplZAIGAAAAQ3VzdG9tAQEAAAAVCQAAAAsAAABQYXJzZVBhcmFtcwIHAAAATG9nRnVsbAIMAAAATG9nTWFsZm9ybWVkAg4AAABDb250cmFjdFBhdXNlZAITAAAASW52b2tlQ29udHJhY3RFcnJvcgITAAAASW52b2tlVHJhbnNmZXJFcnJvcgIaAAAARmFpbGVkVXBncmFkZU1pc3NpbmdNb2R1bGUCHAAAAEZhaWxlZFVwZ3JhZGVNaXNzaW5nQ29udHJhY3QCJQAAAEZhaWxlZFVwZ3JhZGVVbnN1cHBvcnRlZE1vZHVsZVZlcnNpb24CBAAAAHdyYXAEFAACAAAAAgAAAHRvFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAECAAAADBYBBAAAAGRhdGEdARUEAAAADgAAAEludmFsaWRUb2tlbklkAhEAAABJbnN1ZmZpY2llbnRGdW5kcwIMAAAAVW5hdXRob3JpemVkAgYAAABDdXN0b20BAQAAABUJAAAACwAAAFBhcnNlUGFyYW1zAgcAAABMb2dGdWxsAgwAAABMb2dNYWxmb3JtZWQCDgAAAENvbnRyYWN0UGF1c2VkAhMAAABJbnZva2VDb250cmFjdEVycm9yAhMAAABJbnZva2VUcmFuc2ZlckVycm9yAhoAAABGYWlsZWRVcGdyYWRlTWlzc2luZ01vZHVsZQIcAAAARmFpbGVkVXBncmFkZU1pc3NpbmdDb250cmFjdAIlAAAARmFpbGVkVXBncmFkZVVuc3VwcG9ydGVkTW9kdWxlVmVyc2lvbgIBHwYAAAAACAAAAE5ld0FkbWluAAEAAAAJAAAAbmV3X2FkbWluFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADPsNAAAAVG9rZW5NZXRhZGF0YQACAAAACAAAAHRva2VuX2lkHQAMAAAAbWV0YWRhdGFfdXJsFAACAAAAAwAAAHVybBYBBAAAAGhhc2gVAgAAAAQAAABOb25lAgQAAABTb21lAQEAAAATIAAAAAL8DgAAAFVwZGF0ZU9wZXJhdG9yAAMAAAAGAAAAdXBkYXRlFQIAAAAGAAAAUmVtb3ZlAgMAAABBZGQCBQAAAG93bmVyFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADAgAAABvcGVyYXRvchUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAz9BAAAAEJ1cm4AAwAAAAgAAAB0b2tlbl9pZB0ABgAAAGFtb3VudBslAAAABQAAAG93bmVyFQIAAAAHAAAAQWNjb3VudAEBAAAACwgAAABDb250cmFjdAEBAAAADP4EAAAATWludAADAAAACAAAAHRva2VuX2lkHQAGAAAAYW1vdW50GyUAAAAFAAAAb3duZXIVAgAAAAcAAABBY2NvdW50AQEAAAALCAAAAENvbnRyYWN0AQEAAAAM/wgAAABUcmFuc2ZlcgAEAAAACAAAAHRva2VuX2lkHQAGAAAAYW1vdW50GyUAAAAEAAAAZnJvbRUCAAAABwAAAEFjY291bnQBAQAAAAsIAAAAQ29udHJhY3QBAQAAAAwCAAAAdG8VAgAAAAcAAABBY2NvdW50AQEAAAALCAAAAENvbnRyYWN0AQEAAAAM'
     )
-
+ 
     console.log(out);
-}
+}*/
 
 export {
     initContract, interact, initTokenContract,

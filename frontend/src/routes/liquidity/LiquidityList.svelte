@@ -10,10 +10,10 @@
 </script>
 
 {#if !$selectedLiquidityPool}
-	<div class="flex place-self-center">
+	<div class="flex place-self-center mt-5">
 		<div class="flex justify-center grow place-self-center ">
 			<div class="flex flex-col bg-base-300 basis-1/2 rounded-lg p-2  max-w-lg">
-				<div class="basis-2/6 bg-base-200 flex flex-row mb-1 p-1 rounded-lg w-full">
+				<div class="basis-2/6 flex flex-row mb-1 p-1 rounded-lg w-full justify-center">
 					<h3>Liquidity Pools</h3>
 				</div>
 				<div class="basis-2/6 bg-base-200 flex flex-row mb-2 p-1 rounded-lg w-full">

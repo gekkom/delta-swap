@@ -25,7 +25,7 @@ export const TOKEN_LIST = [
         address: 0,
         exchangeAddress: 0,
         tokenId: Buffer.alloc(0),
-        decimals: Math.pow(10, 6),
+        decimals: 6,
         logoUrl: '/ccd.webp'
     },
     {
@@ -35,7 +35,7 @@ export const TOKEN_LIST = [
         address: 3262,
         exchangeAddress: EXCHANGE_CONTRACT_ADDRESS,
         tokenId: Buffer.alloc(0),
-        decimals: Math.pow(10, 6),
+        decimals: 6,
         logoUrl: '/ccd.webp'
     },
 ];
