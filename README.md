@@ -63,7 +63,7 @@ Congrats you made it!
 - In the web-sdk I couldn't find a way to get the schema that can be embedded into the smart contract
 
 ## Personal Comment:
-While there were a lot of issues which caused me to run out of time to perfect this project, I still enjoyed this hackathon and see the potential in Concordium, I hope you guys put in the time to perfect it and make it more usable for developers
+While there were a lot of issues which caused me to run out of time to perfect this project, I still enjoyed this hackathon and see the potential in Concordium, I hope you guys put in the time to perfect it, and make it easier for developers develop on it
 
 ## Disclaimer
 - This is just a prototype and shouldn't be used in a production environment
