@@ -1,5 +1,5 @@
 import { get, writable } from 'svelte/store'
-import { AccountTransactionType, CcdAmount, ModuleReference, serializeUpdateContractParameters, toBuffer, type UpdateContractPayload } from 'concordium-web-sdk-vite';
+import { AccountTransactionType, CcdAmount, ModuleReference, serializeUpdateContractParameters, type UpdateContractPayload } from 'concordium-web-sdk-vite';
 import * as leb from '@thi.ng/leb128';
 import type { UpdateOperatorParams } from '$lib/Cis2Types';
 import { EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_MODULE_ADDRESS, EXCHANGE_SCHEMA, WCCD_CONTRACT_ADDRESS, WCCD_SCHEMA } from '$lib/Constants';
@@ -8,6 +8,9 @@ import { wallet, address, connect } from '$lib/Wallet';
 import { CONCORDIUM, type Token } from './Tokens';
 import { Buffer } from 'buffer';
 
+export function toBuffer(s: string, encoding?: BufferEncoding): Buffer {
+    return Buffer.from(s, encoding);
+}
 
 async function initContract() {
     const out = await get(wallet).sendTransaction(get(address),
@@ -138,7 +141,7 @@ async function ccdToTokenPrice(token: Token, amount: string) {
         return '';
     }
 
-    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex')).readUBigInt()) / token.decimals).toString();
+    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / token.decimals).toString();
 }
 
 async function tokenToCcdPrice(token: Token, amount: string) {
@@ -156,7 +159,7 @@ async function tokenToCcdPrice(token: Token, amount: string) {
         return '';
     }
 
-    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex')).readUBigInt()) / CONCORDIUM.decimals).toString();
+    return (Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / CONCORDIUM.decimals).toString();
 }
 
 async function getTotalLiquidity(token: Token) {
@@ -169,7 +172,7 @@ async function getTotalLiquidity(token: Token) {
         return 0;
     }
 
-    return Number(new BufferStream(toBuffer(out.returnValue, 'hex')).readUBigInt());
+    return Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt());
 }
 
 async function getPoolCCDBalance(token: Token) {
@@ -192,7 +195,7 @@ async function getPoolTokenReserve(token: Token) {
         return 0;
     }
 
-    return Number(new BufferStream(toBuffer(out.returnValue, 'hex')).readUBigInt()) / token.decimals;
+    return Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt()) / token.decimals;
 }
 
 async function getUserLiquidity(token: Token) {
@@ -205,7 +208,7 @@ async function getUserLiquidity(token: Token) {
         return 0;
     }
 
-    return Number(new BufferStream(toBuffer(out.returnValue, 'hex')).readUBigInt());
+    return Number(new BufferStream(toBuffer(out.returnValue, 'hex') as any).readUBigInt());
 }
 
 async function isOperatorOfToken(token: Token) {
@@ -308,7 +311,7 @@ async function getBalanceOf() {
                 token_id: '',
             },
         ],
-        toBuffer(WCCD_SCHEMA, 'base64'),
+        toBuffer(WCCD_SCHEMA, 'base64') as any,
     );
 
 
@@ -366,7 +369,7 @@ async function interactBalanceOf() {
                 token_id: '',
             },
         ],
-        toBuffer(WCCD_SCHEMA, 'base64'),
+        toBuffer(WCCD_SCHEMA, 'base64') as any,
     );
 
 
