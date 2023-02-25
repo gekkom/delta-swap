@@ -5,7 +5,7 @@
 
 [Check it out](https://delta-swap.vercel.app)
 
-### Deltaswap is a Uniswap V1 inspired decentralized exchange and liquidity staking platform, and it uses a constant function market maker
+### Deltaswap is a Uniswap V1 inspired decentralized exchange and liquidity staking platform, it uses a constant function market maker and charges a 0.3% fee
 
 [![](https://s9.gifyu.com/images/image55172a3659d42b9d.png)](https://gifyu.com/image/S7H4c)
 [![](https://s3.gifyu.com/images/image7689320c50921740.png)](https://gifyu.com/image/S7H4i)
