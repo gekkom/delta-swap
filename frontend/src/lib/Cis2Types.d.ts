@@ -1,4 +1,4 @@
-import { ContractAddress } from "@concordium/web-sdk";
+import { ContractAddress } from "concordium-web-sdk-vite";
 import { ParamContractAddress } from "./ConcordiumTypes";
 
 export type TokenIdU32 = number;

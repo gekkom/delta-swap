@@ -12,9 +12,9 @@
 	},
 	"dependencies": {
 		"@concordium/browser-wallet-api-helpers": "^2.2.0",
-		"@concordium/web-sdk": "^3.2.0",
 		"@thi.ng/leb128": "^3.0.9",
-		"buffer": "^6.0.3"
+		"buffer": "^6.0.3",
+		"concordium-web-sdk-vite": "3.2.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "2.1.1",

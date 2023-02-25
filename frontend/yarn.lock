@@ -691,6 +691,16 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
+concordium-web-sdk-vite@3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/concordium-web-sdk-vite/-/concordium-web-sdk-vite-3.2.1.tgz#71d4e8b701ad66e1fc68df0e59877118902c62a6"
+  integrity sha512-2c8aDs+07oDFJ5B1W8z7maCY1tNL76BdLT/CeNnmspXIsAR52vMqT0gLfvrV9YoChI9spk34y/XP0CebbIyApg==
+  dependencies:
+    "@concordium/common-sdk" "6.2.0"
+    "@concordium/rust-bindings" "0.9.0"
+    buffer "^6.0.3"
+    process "^0.11.10"
+
 console-control-strings@^1.0.0, console-control-strings@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"

@@ -1,5 +1,5 @@
 import { get, writable } from 'svelte/store'
-import { AccountTransactionType, CcdAmount, ModuleReference, serializeUpdateContractParameters, toBuffer, type UpdateContractPayload } from '@concordium/web-sdk';
+import { AccountTransactionType, CcdAmount, ModuleReference, serializeUpdateContractParameters, toBuffer, type UpdateContractPayload } from 'concordium-web-sdk-vite';
 import * as leb from '@thi.ng/leb128';
 import type { UpdateOperatorParams } from '$lib/Cis2Types';
 import { EXCHANGE_CONTRACT_ADDRESS, EXCHANGE_MODULE_ADDRESS, EXCHANGE_SCHEMA, WCCD_CONTRACT_ADDRESS, WCCD_SCHEMA } from '$lib/Constants';
