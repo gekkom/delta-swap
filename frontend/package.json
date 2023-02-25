@@ -12,12 +12,11 @@
 	},
 	"dependencies": {
 		"@concordium/browser-wallet-api-helpers": "^2.2.0",
+		"@concordium/web-sdk": "^3.2.0",
 		"@thi.ng/leb128": "^3.0.9",
-		"buffer": "^6.0.3",
-		"concordium-web-sdk-vite": "^3.2.0"
+		"buffer": "^6.0.3"
 	},
 	"devDependencies": {
-		"@rollup/plugin-alias": "^4.0.3",
 		"@sveltejs/adapter-auto": "2.0.0",
 		"@sveltejs/kit": "1.8.3",
 		"@types/cookie": "^0.5.1",
