@@ -18,6 +18,7 @@
 - Liquidity Pool explorer where you can add or remove liquidity
 - Swap interface that lets you search and select the asset you want to trade
 - Realtime prediction of how much token you will recieve
+- All functions that modify on chain state emit a unique event
 - Seamless user experience
 - Named after delta wings
 
@@ -38,20 +39,19 @@
 
 ## How to get running
 
-Lets start with the contract
+Lets start with the contract (If you want to build them)
 
 1. Ensure you have all the tools for developing Concordium smart contracts and you have set up your concordium-client
 2. ```cd contract```
 3. ```cargo concordium build --schema-base64-out "./base64_schema.b64" --out ./exchange.wasm.v1```
-4. ```concordium-client module deploy exchange.wasm.v1 --sender test --grpc-ip node.testnet.concordium.com --grpc-port 10000```
-5. Copy your deployed module address
 
 And now comes the frontend
 
 1. ```cd frontend```
-2. Paste the module address into ```src/lib/Constants.ts```
 3. ```yarn```
 4. ```yarn dev``` or ```yarn build```
+
+Note: By default the already deployed contract and schema is present in ```frontend/src/lib/Constants.ts```, if you modified the contract you need to replace the schema, module address and contract address with the new values
 
 Congrats you made it!
 
@@ -64,6 +64,17 @@ Congrats you made it!
 
 ## Personal Comment:
 While there were a lot of issues which caused me to run out of time to perfect this project, I still enjoyed this hackathon and see the potential in Concordium, I hope you guys put in the time to perfect it, and make it easier for developers develop on it
+
+## Other resources used
+- https://github.com/chainorders/concordium-nft-tutorials
+- https://proposals.concordium.software/CIS/cis-2.html
+- https://github.com/Concordium/concordium-rust-smart-contracts
+- https://github.com/Concordium/concordium-node-sdk-js
+- https://developer.concordium.software/en/mainnet/smart-contracts/general/introduction.html
+- https://github.com/Concordium/concordium-browser-wallet
+- https://github.com/Concordium/concordium-client
+- https://github.com/Concordium/concordium-dapp-piggybank/
+- https://github.com/Uniswap/v1-contracts
 
 ## Disclaimer
 - This is just a prototype and shouldn't be used in a production environment
