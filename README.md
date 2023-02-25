@@ -31,7 +31,7 @@ Deltaswap is a Uniswap V1 inspired decentralized exchange and liquidity staking 
 - I needed to fork the @concordium/web-sdk npm package because by default it wasn't compatible with vite, check it out here [concordium-web-sdk-vite](https://www.npmjs.com/package/concordium-web-sdk-vite)
 - I tried including age verification in this project but unfortunately i couldn't find a way to do it with the smart contract, and since client side authentication would be pointless in a dapp where anyone can interact with the contract without using my fronted, i opted not include this feature
 - I couldn't make a smart contract which supports all TokenAmounts so this one uses TokenAmountU64, of course it can be easily modified to work with a different amount
-- I tried to get the block time in the contract, but the method: get_slot_time() that is supposed to do this is unsafe and didn't work for me
+- I tried to get the block time in the contract, but the method: ```get_slot_time()``` that is supposed to do this is unsafe and didn't work for me
 - In the web-sdk I couldn't find a way to get the schema that can be embedded into the smart contract
 
 ## Personal Comment:
