@@ -34,8 +34,9 @@
 
 1. Go to the [Demo Site](https://delta-swap.vercel.app)
 2. Make sure you have set your browser wallet to Testnet and you have some Testnet CCd
-3. Write the amount of CCD you want to swap and accept the transactions
-4. Thats it, if it for whatever reason didn't work for you check out the [Demo Video](https://www.youtube.com/watch?v=DWxYKzcof2k)
+3. Connect your wallet!
+4. Write the amount of CCD you want to swap and accept the transactions
+5. Thats it, if it for whatever reason didn't work for you check out the [Demo Video](https://www.youtube.com/watch?v=DWxYKzcof2k)
 
 ## How to get running
 
