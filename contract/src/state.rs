@@ -29,7 +29,9 @@ pub struct State<S: HasStateApi> {
     pub total_supply: u64,
 }
 
+/// The implementation of the state.
 impl<S: HasStateApi> State<S> {
+    /// Initialize the state.
     pub fn new(
         state_builder: &mut StateBuilder<S>,
         token_address: ContractAddress,
@@ -42,7 +44,7 @@ impl<S: HasStateApi> State<S> {
             total_supply: 0u64.into(),
         }
     }
-
+    // The following functions are used to read the state.
     pub fn balance(&self, address: &AccountAddress) -> ContractResult<u64> {
         Ok(self
             .liquidity_token
@@ -83,6 +85,7 @@ impl<S: HasStateApi> State<S> {
         Ok(())
     }*/
 
+    // Mint tokens to the owner's account.
     pub fn mint(
         &mut self,
         amount: TokenAmountU64,
@@ -104,6 +107,7 @@ impl<S: HasStateApi> State<S> {
         Ok(())
     }
 
+    // Burn tokens from the owner's account.
     pub fn burn(&mut self, amount: TokenAmountU64, owner: &AccountAddress) -> ContractResult<()> {
         if amount == 0u64.into() {
             return Ok(());

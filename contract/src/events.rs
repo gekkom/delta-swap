@@ -2,11 +2,13 @@
 use concordium_cis2::*;
 use concordium_std::{collections::BTreeMap, *};
 
+// The following constants are used to tag the different events.
 pub const LIQUIDITY_ADD_EVENT_TAG: u8 = u8::MAX;
 pub const LIQUIDITY_REMOVE_EVENT_TAG: u8 = u8::MAX - 1;
 pub const CCD_TO_TOKEN_EVENT_TAG: u8 = u8::MAX - 2;
 pub const TOKEN_TO_CCD_EVENT_TAG: u8 = u8::MAX - 3;
 
+// The following structs are used to represent the different events.
 #[derive(Debug)]
 pub enum ExchangeEvent {
     LiquidityAdded(LiquidityAddedEvent),
@@ -49,6 +51,7 @@ pub struct TokenToCcdEvent {
     pub sender: AccountAddress,
 }
 
+// The following impls are used to serialize the different events.
 impl schema::SchemaType for ExchangeEvent {
     fn get_type() -> schema::Type {
         let mut event_map = BTreeMap::new();
@@ -129,6 +132,7 @@ impl Serial for ExchangeEvent {
     }
 }
 
+// The following impls are used to deserialize the different events.
 impl Deserial for ExchangeEvent {
     fn deserial<R: Read>(source: &mut R) -> ParseResult<Self> {
         let tag = source.read_u8()?;

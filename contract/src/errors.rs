@@ -3,6 +3,7 @@
 
 use concordium_std::*;
 
+/// Errors which can be returned by the Marketplace Contract.
 #[derive(Serialize, Debug, PartialEq, Eq, Reject, SchemaType)]
 pub enum ExchangeError {
     #[from(ParseError)]

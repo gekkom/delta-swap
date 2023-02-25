@@ -15,8 +15,7 @@ use state::*;
 
 type ContractResult<A> = Result<A, ExchangeError>;
 
-/// The parameter type for the contract function `wrap`.
-/// It includes a receiver for receiving the wrapped CCD tokens.
+/// The parameter for the init function.
 #[derive(Serialize, SchemaType)]
 struct InitParams {
     token_address: u64,
@@ -41,12 +40,14 @@ fn init<S: HasStateApi>(
     Ok(state)
 }
 
+/// The parameter for the add_liquidity function.
 #[derive(Serialize, SchemaType)]
 struct AddLiquidityParams {
     min_liquidity: u64,
     max_tokens: u64,
 }
 
+/// Add liquidity to the exchange.
 #[receive(
     contract = "exchange",
     name = "add_liquidity",
@@ -86,7 +87,6 @@ fn add_liquidity<S: HasStateApi>(
             &tokenAddress,
             Address::Contract(ctx.self_address()),
         )?;
-        let (state, state_builder) = host.state_and_builder();
 
         let tokenReserve: u64 = contractBalance.into();
         let tokenAmount: u64 = amount.micro_ccd * tokenReserve / ccdReserve + 1;
@@ -165,6 +165,7 @@ fn add_liquidity<S: HasStateApi>(
     }
 }
 
+// Receive token from the user.
 #[receive(contract = "exchange", name = "receive_token")]
 fn receive_token<S: HasStateApi>(
     ctx: &impl HasReceiveContext,
@@ -173,6 +174,7 @@ fn receive_token<S: HasStateApi>(
     Ok(())
 }
 
+/// The parameter for the remove_liquidity function.
 #[derive(Serialize, SchemaType)]
 struct RemoveLiquidityParams {
     amount: u64,
@@ -180,6 +182,7 @@ struct RemoveLiquidityParams {
     min_tokens: u64,
 }
 
+/// Remove liquidity from the exchange.
 #[receive(
     contract = "exchange",
     name = "remove_liquidity",
@@ -259,6 +262,7 @@ fn remove_liquidity<S: HasStateApi>(
     Ok((ccdAmount, token_amount))
 }
 
+// Get the amount of tokens that can be bought with the given amount of CCD.
 fn get_input_price(input_amount: u64, input_reserve: u64, output_reserve: u64) -> u64 {
     let input_amount_with_fee: u64 = input_amount * 997;
     let numerator: u64 = input_amount_with_fee * output_reserve;
@@ -266,11 +270,13 @@ fn get_input_price(input_amount: u64, input_reserve: u64, output_reserve: u64) -
     return numerator / denominator;
 }
 
+/// The parameter for the ccd_to_token function.
 #[derive(Serialize, SchemaType)]
 struct CcdToTokenParams {
     min_tokens: u64,
 }
 
+/// Convert CCD to tokens.
 #[receive(
     contract = "exchange",
     name = "ccd_to_token",
@@ -337,12 +343,14 @@ fn ccd_to_token<S: HasStateApi>(
     Ok(tokens_bought)
 }
 
+/// The parameter for the token_to_ccd function.
 #[derive(Serialize, SchemaType)]
 struct TokenToCcdParams {
     tokens_sold: u64,
     min_ccd: u64,
 }
 
+/// Convert tokens to CCD.
 #[receive(
     contract = "exchange",
     name = "token_to_ccd",
@@ -413,6 +421,7 @@ fn token_to_ccd<S: HasStateApi>(
     Ok(ccd_bought)
 }
 
+// Get the total liquidity in the exchange.
 #[receive(
     contract = "exchange",
     name = "get_total_liquidity",
@@ -426,11 +435,13 @@ fn get_total_liquidity<S: HasStateApi>(
     Ok(host.state().total_supply)
 }
 
+/// The parameter for the ccd_to_token_price function.
 #[derive(Serialize, SchemaType)]
 struct CcdToTokenPriceParams {
     ccd_sold: u64,
 }
 
+// Get the price of converting CCD to tokens.
 #[receive(
     contract = "exchange",
     name = "ccd_to_token_price",
@@ -465,11 +476,13 @@ fn ccd_to_token_price<S: HasStateApi>(
     Ok(tokens_bought)
 }
 
+/// The parameter for the token_to_ccd_price function.
 #[derive(Serialize, SchemaType)]
 struct TokenToCcdPriceParams {
     tokens_sold: u64,
 }
 
+// Get the price of converting tokens to CCD.
 #[receive(
     contract = "exchange",
     name = "token_to_ccd_price",
@@ -504,12 +517,14 @@ fn token_to_ccd_price<S: HasStateApi>(
     Ok(ccd_bought)
 }
 
+/// The parameter for the get_token_data function.
 #[derive(Serialize, SchemaType)]
 struct TokenData {
     token_address: ContractAddress,
     token_id: TokenIdVec,
 }
 
+// Get the token address and token id.
 #[receive(
     contract = "exchange",
     name = "get_token_data",
@@ -526,6 +541,7 @@ fn get_token_data<S: HasStateApi>(
     })
 }
 
+// Get the token reserve.
 #[receive(
     contract = "exchange",
     name = "get_token_reserve",
@@ -549,6 +565,7 @@ fn get_token_reserve<S: HasStateApi>(
     Ok(contract_balance.into())
 }
 
+// Get the liquidity balance of the sender.
 #[receive(
     contract = "exchange",
     name = "get_liquidity_balance",
@@ -565,6 +582,7 @@ fn get_liquidity_balance<S: HasStateApi>(
     Ok(liquidity_balace)
 }
 
+// Get the total liquidity.
 #[receive(
     contract = "exchange",
     name = "is_operator_of_token",
